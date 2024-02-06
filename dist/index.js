@@ -32,18 +32,23 @@ async function run() {
           octokit.log.warn(
             `Request quota exhausted for request ${options.method} ${options.url}`,
           );
-          if (retryCount < 1) {
-            // only retries once
-            octokit.log.info(`Retrying after ${retryAfter} seconds!`);
+          if (retryCount <= 100) {
+            octokit.log.warn(`Retry ${retryCount} of 100 after ${retryAfter} seconds!`);
             return true;
           }
         },
         onSecondaryRateLimit: (retryAfter, options, octokit) => {
           // does not retry, only logs a warning
           octokit.log.warn(
-            `SecondaryRateLimit detected for request ${options.method} ${options.url}`,
+            `SecondaryRateLimit detected for request ${options.method} ${options.url} retryAfter=${retryAfter}`,
           );
         },
+        onAbuseLimit: (retryAfter, options, octokit) => {
+          // does not retry, only logs a warning
+          octokit.log.warn(
+            `AbuseLimit detected for request ${options.method} ${options.url} retryAfter=${retryAfter}`
+          );
+        },        
       },
     });    
     let workflows = await octokit
