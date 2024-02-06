@@ -32,10 +32,11 @@ async function run() {
           octokit.log.warn(
             `Request quota exhausted for request ${options.method} ${options.url}`,
           );
-          if (retryCount <= 100) {
-            octokit.log.warn(`Retry ${retryCount} of 100 after ${retryAfter} seconds!`);
+          while (retryAfter <= 300) {
+            octokit.log.warn(`Waiting ${retryAfter} seconds to retry (${retryCount} retries so far)`);
             return true;
           }
+          octokit.log.warn(`Aborting, as we would be waiting ${retryAfter} seconds to retry (${retryCount} retries so far)`);
         },
         onSecondaryRateLimit: (retryAfter, options, octokit) => {
           // does not retry, only logs a warning
